@@ -11,7 +11,7 @@ func TestLogPrintf ( t *testing.T ) {
 		t.Errorf( err.Error() )
 	}
 
-	l.Printf( 10, "%d", 1024 )
+	l.Infof( "%d", 1024 )
 	return
 }
 
@@ -21,6 +21,6 @@ func TestLogPrint( t *testing.T ) {
 		t.Errorf( err.Error() )
 	}
 
-	l.Print( 10, 1024, "abc", l )
+	l.Info( 1024, "abc", l )
 	return
 }

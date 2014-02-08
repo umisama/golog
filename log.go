@@ -19,12 +19,23 @@ const (
 	LogLevel_Critical
 )
 
-type Logger struct {
+type logger struct {
 	log_tmpl *template.Template
 	time_fmt string
 	level    int64
 	prefix   string
 	dst      io.Writer
+}
+
+type Logger interface {
+	Debug(a ...interface{})
+	Debugf(msg_fmt string, a ...interface{})
+	Info(a ...interface{})
+	Infof(msg_fmt string, a ...interface{})
+	Warn(a ...interface{})
+	Warnf(msg_fmt string, a ...interface{})
+	Critical(a ...interface{})
+	Criticalf(msg_fmt string, a ...interface{})
 }
 
 type LogTemplate struct {
@@ -49,13 +60,13 @@ const (
 	TIME_FORMAT_MILLISEC = "2006/1/2 15:04:05.000"
 )
 
-func NewLogger(dst io.Writer, time_fmt string, log_fmt string) (logger *Logger, err error) {
+func NewLogger(dst io.Writer, time_fmt string, log_fmt string) (l Logger, err error) {
 	t, err := template.New("log").Parse(log_fmt)
 	if err != nil {
 		return
 	}
 
-	logger = &Logger{
+	l = &logger{
 		log_tmpl: t,
 		time_fmt: time_fmt,
 		level:    10,
@@ -65,22 +76,52 @@ func NewLogger(dst io.Writer, time_fmt string, log_fmt string) (logger *Logger, 
 	return
 }
 
-func NewSimpleLogger(dst io.Writer) *Logger {
-	logger := new(Logger)
-
-	return logger
-}
-
-func (l *Logger) SetEnableLevel(level int64) {
+func (l *logger) SetEnableLevel(level int64) {
 	l.level = level
 	return
 }
 
-func (l *Logger) Print(level int64, a ...interface{}) {
-	if l.level < level {
-		return
-	}
+func (l *logger) Debug(a ...interface{}) {
+	l.print(a...)
+	return
+}
 
+func (l *logger) Debugf(msg_fmt string, a ...interface{}) {
+	l.printf(msg_fmt, a...)
+	return
+}
+
+func (l *logger) Info(a ...interface{}) {
+	l.print(a...)
+	return
+}
+
+func (l *logger) Infof(msg_fmt string, a ...interface{}) {
+	l.printf(msg_fmt, a...)
+	return
+}
+
+func (l *logger) Warn(a ...interface{}) {
+	l.print(a...)
+	return
+}
+
+func (l *logger) Warnf(msg_fmt string, a ...interface{}) {
+	l.printf(msg_fmt, a...)
+	return
+}
+
+func (l *logger) Critical(a ...interface{}) {
+	l.print(a...)
+	return
+}
+
+func (l *logger) Criticalf(msg_fmt string, a ...interface{}) {
+	l.printf(msg_fmt, a...)
+	return
+}
+
+func (l *logger) print(a ...interface{}) {
 	s := ""
 	for _, v := range a {
 		s += fmt.Sprintf("%#v ", v)
@@ -89,12 +130,12 @@ func (l *Logger) Print(level int64, a ...interface{}) {
 	l.printer(s)
 }
 
-func (l *Logger) Printf(level int64, msg_fmt string, a ...interface{}) {
+func (l *logger) printf(msg_fmt string, a ...interface{}) {
 	s := fmt.Sprintf(msg_fmt, a...)
 	l.printer(s)
 }
 
-func (l *Logger) printer(str string) {
+func (l *logger) printer(str string) {
 	pc, file_name, line_num, ok := runtime.Caller(2)
 	if !ok {
 		return
