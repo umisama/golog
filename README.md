@@ -3,7 +3,7 @@ golog is yet another logger implementation for golang.
 
 ## Features
  * 4 log level : DEBUG, INFO, WARN, CRITICAL
-  * very small cost of non-output function call.
+  * very small cost on non-output function call.
  * output format is free with text/template. can use these factors...
   * file name( full / short )
   * function name( full / short )
@@ -13,7 +13,9 @@ golog is yet another logger implementation for golang.
  * time format is free
 
 ## Usage
-Simple example is here
+[godoc is here](http://godoc.org/github.com/umisama/golog)
+
+simple example:
 
 ```go
 package main
@@ -65,6 +67,12 @@ in production, change  log level.
 2014/2/9 12:41:59 main.go:23(main) : "Critical!"
 ```
 
+## install
+
+```
+go get github.com/umisama/golog
+```
+
 ## Feedback
-@umisama
+@umisama  
 umisama@fe2o3.jp
