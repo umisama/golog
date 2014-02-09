@@ -17,11 +17,11 @@ type LogLevel int
 // priority : Debug < Info < Warn < Critical
 // LogLevel_Silent ignores all log levels.
 const (
-	LogLevel_Debug = LogLevel(iota)	// output all
-	LogLevel_Info					// outuut Info or greater.
-	LogLevel_Warn					// output Warn and Critical
-	LogLevel_Critical				// output Critical only
-	LogLevel_Silent					// no output
+	LogLevel_Debug    = LogLevel(iota) // output all
+	LogLevel_Info                      // outuut Info or greater.
+	LogLevel_Warn                      // output Warn and Critical
+	LogLevel_Critical                  // output Critical only
+	LogLevel_Silent                    // no output
 )
 
 type logger struct {
@@ -86,6 +86,7 @@ type LogTemplate struct {
 	ShortFuncName string
 	FileName      string
 	ShortFileName string
+	Goroutine     string
 	LineNumber    string
 	Message       string
 }
@@ -104,7 +105,7 @@ const (
 	TIME_FORMAT_MILLISEC = "2006/1/2 15:04:05.000"
 )
 
-// NewLogger returns Logger that outputs to dst with level.  
+// NewLogger returns Logger that outputs to dst with level.
 // log will be formated by time_fmt and log_fmt.
 func NewLogger(dst io.Writer, time_fmt string, log_fmt string, level LogLevel) (l Logger, err error) {
 	t, err := template.New("log").Parse(log_fmt)
@@ -213,6 +214,7 @@ func (l *logger) printer(str string) {
 		FileName:      file_name,
 		ShortFileName: file_name_s,
 		LineNumber:    strconv.Itoa(line_num),
+		Goroutine:     strconv.Itoa(runtime.NumGoroutine()),
 		Message:       str,
 	}
 
