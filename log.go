@@ -22,9 +22,25 @@ const (
 type logger struct {
 	log_tmpl *template.Template
 	time_fmt string
-	level    int64
+	level    LogLevel
 	prefix   string
 	dst      io.Writer
+}
+
+type debug_logger struct {
+	*logger
+}
+
+type info_logger struct {
+	*debug_logger
+}
+
+type warn_logger struct {
+	*info_logger
+}
+
+type critical_logger struct {
+	*warn_logger
 }
 
 type Logger interface {
@@ -60,24 +76,35 @@ const (
 	TIME_FORMAT_MILLISEC = "2006/1/2 15:04:05.000"
 )
 
-func NewLogger(dst io.Writer, time_fmt string, log_fmt string) (l Logger, err error) {
+func NewLogger(dst io.Writer, time_fmt string, log_fmt string, level LogLevel) (l Logger, err error) {
 	t, err := template.New("log").Parse(log_fmt)
 	if err != nil {
 		return
 	}
 
 	l = &logger{
+		level:    level,
 		log_tmpl: t,
 		time_fmt: time_fmt,
-		level:    10,
 		dst:      dst,
 	}
 
-	return
-}
+	if level >= LogLevel_Debug {
+		l = &debug_logger{l.(*logger)}
+	}
 
-func (l *logger) SetEnableLevel(level int64) {
-	l.level = level
+	if level >= LogLevel_Info {
+		l = &info_logger{l.(*debug_logger)}
+	}
+
+	if level >= LogLevel_Warn {
+		l = &warn_logger{l.(*info_logger)}
+	}
+
+	if level >= LogLevel_Critical {
+		l = &critical_logger{l.(*warn_logger)}
+	}
+
 	return
 }
 
@@ -136,28 +163,26 @@ func (l *logger) printf(msg_fmt string, a ...interface{}) {
 }
 
 func (l *logger) printer(str string) {
-	pc, file_name, line_num, ok := runtime.Caller(2)
+	pc, file_name, line_num, ok := runtime.Caller(3)
 	if !ok {
 		return
 	}
 
-	go func() {
-		func_name := runtime.FuncForPC(pc).Name()
-		func_name_s := func_name[strings.LastIndex(func_name, ".")+1:]
-		file_name_s := file_name[strings.LastIndex(file_name, "/")+1:]
+	func_name := runtime.FuncForPC(pc).Name()
+	func_name_s := func_name[strings.LastIndex(func_name, ".")+1:]
+	file_name_s := file_name[strings.LastIndex(file_name, "/")+1:]
 
-		d := &LogTemplate{
-			Time:          time.Now().Format(l.time_fmt),
-			FuncName:      func_name,
-			ShortFuncName: func_name_s,
-			FileName:      file_name,
-			ShortFileName: file_name_s,
-			LineNumber:    strconv.Itoa(line_num),
-			Message:       str,
-		}
+	d := &LogTemplate{
+		Time:          time.Now().Format(l.time_fmt),
+		FuncName:      func_name,
+		ShortFuncName: func_name_s,
+		FileName:      file_name,
+		ShortFileName: file_name_s,
+		LineNumber:    strconv.Itoa(line_num),
+		Message:       str,
+	}
 
-		l.log_tmpl.Execute(l.dst, d)
-	}()
+	l.log_tmpl.Execute(l.dst, d)
 
 	return
 }
@@ -175,4 +200,28 @@ func (l LogLevel) String() string {
 	}
 
 	return "!!panic!!"
+}
+
+func (l *info_logger) Debug(a ...interface{}) {
+	return
+}
+
+func (l *info_logger) Debugf(msg_fmt string, a ...interface{}) {
+	return
+}
+
+func (l *warn_logger) Info(a ...interface{}) {
+	return
+}
+
+func (l *warn_logger) Infof(msg_fmt string, a ...interface{}) {
+	return
+}
+
+func (l *critical_logger) Warn(a ...interface{}) {
+	return
+}
+
+func (l *critical_logger) Warnf(msg_fmt string, a ...interface{}) {
+	return
 }
