@@ -10,14 +10,18 @@ import (
 	"time"
 )
 
+// LogLevel reprecents log priority.
 type LogLevel int
 
+// LogLevel_* reprecents supporting log level.
+//   priority : Debug < Info < Warn < Critical
+// LogLevel_Silent ignores all log levels.
 const (
-	LogLevel_Debug = LogLevel(iota)
-	LogLevel_Info
-	LogLevel_Warn
-	LogLevel_Critical
-	LogLevel_Silent
+	LogLevel_Debug = LogLevel(iota)	// output all
+	LogLevel_Info					// outuut Info or greater.
+	LogLevel_Warn					// output Warn and Critical
+	LogLevel_Critical				// output Critical only
+	LogLevel_Silent					// no output
 )
 
 type logger struct {
@@ -49,16 +53,33 @@ type silent_logger struct {
 }
 
 type Logger interface {
+	// Debug output log by Debug level(1)
 	Debug(a ...interface{})
+
+	// Debugf output log by Debug level(1) with format string.
 	Debugf(msg_fmt string, a ...interface{})
+
+	// Info output log by Info level(2)
 	Info(a ...interface{})
+
+	// Infof output log by Info level(2) with format string.
 	Infof(msg_fmt string, a ...interface{})
+
+	// Warn output log by Warn level(3)
 	Warn(a ...interface{})
+
+	// Warnf output log by Warn level(3) with format string.
 	Warnf(msg_fmt string, a ...interface{})
+
+	// Critical output log by Critical level(4)
 	Critical(a ...interface{})
+
+	// Criticalf output log by Critical level(4) with format string.
 	Criticalf(msg_fmt string, a ...interface{})
 }
 
+// LogTemplate is template object on LOG_FORMAT_*
+// this object public for documentation.
 type LogTemplate struct {
 	Time          string
 	FuncName      string
@@ -69,18 +90,22 @@ type LogTemplate struct {
 	Message       string
 }
 
+// LOG_FORMAT_* is example format string(with text/template)
 const (
 	LOG_FORMAT_SIMPLE   = "{{.Time}} : {{.Message}} \n"
 	LOG_FORMAT_STANDARD = "{{.Time}} {{.ShortFileName}}:({{.LineNumber}}) : {{.Message}}\n"
 	LOG_FORMAT_POWERFUL = "{{.Time}} {{.ShortFileName}}:{{.LineNumber}}({{.ShortFuncName}}) : {{.Message}}\n"
 )
 
+// TIME_FORMAT_* is example format string(with time)
 const (
 	TIME_FORMAT_DATE     = "2006/1/2"
 	TIME_FORMAT_SEC      = "2006/1/2 15:04:05"
 	TIME_FORMAT_MILLISEC = "2006/1/2 15:04:05.000"
 )
 
+// NewLogger returns Logger that outputs to dst with level.  
+// log will be formated by time_fmt and log_fmt.
 func NewLogger(dst io.Writer, time_fmt string, log_fmt string, level LogLevel) (l Logger, err error) {
 	t, err := template.New("log").Parse(log_fmt)
 	if err != nil {
