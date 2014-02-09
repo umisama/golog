@@ -17,6 +17,7 @@ const (
 	LogLevel_Info
 	LogLevel_Warn
 	LogLevel_Critical
+	LogLevel_Silent
 )
 
 type logger struct {
@@ -41,6 +42,10 @@ type warn_logger struct {
 
 type critical_logger struct {
 	*warn_logger
+}
+
+type silent_logger struct {
+	*critical_logger
 }
 
 type Logger interface {
@@ -103,6 +108,10 @@ func NewLogger(dst io.Writer, time_fmt string, log_fmt string, level LogLevel) (
 
 	if level >= LogLevel_Critical {
 		l = &critical_logger{l.(*warn_logger)}
+	}
+
+	if level >= LogLevel_Silent {
+		l = &silent_logger{l.(*critical_logger)}
 	}
 
 	return
@@ -223,5 +232,13 @@ func (l *critical_logger) Warn(a ...interface{}) {
 }
 
 func (l *critical_logger) Warnf(msg_fmt string, a ...interface{}) {
+	return
+}
+
+func (l *silent_logger) Critical(a ...interface{}) {
+	return
+}
+
+func (l *silent_logger) Criticalf(msg_fmt string, a ...interface{}) {
 	return
 }

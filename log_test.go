@@ -39,6 +39,11 @@ var testcases = []TestCase{
 		content: []interface{}{1, 2, 3, 4, 5},
 		output:  "1 2 3 4 5 ",
 	},
+	TestCase{
+		level:   LogLevel_Silent,
+		content: []interface{}{"silent"},
+		output:  "",
+	},
 }
 
 func TestDebug(t *testing.T) {
