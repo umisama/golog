@@ -14,7 +14,7 @@ import (
 type LogLevel int
 
 // LogLevel_* reprecents supporting log level.
-//   priority : Debug < Info < Warn < Critical
+// priority : Debug < Info < Warn < Critical
 // LogLevel_Silent ignores all log levels.
 const (
 	LogLevel_Debug = LogLevel(iota)	// output all
