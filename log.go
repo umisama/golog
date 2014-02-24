@@ -185,8 +185,14 @@ func (l *logger) Criticalf(msg_fmt string, a ...interface{}) {
 
 func (l *logger) print(a ...interface{}) {
 	s := ""
+
 	for _, v := range a {
-		s += fmt.Sprintf("%#v ", v)
+		switch v := v.(type) {
+			default :
+				s += fmt.Sprintf("%#v ", v)
+			case error:
+				s += fmt.Sprintf("%s ", v.Error())
+		}
 	}
 
 	l.printer(s)
